@@ -5,6 +5,7 @@ using WorkingWithVisualStudio.Models;
 using Xunit;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
+using Moq;
 
 namespace WorkingWithVisualStudio.Tests
 {
@@ -24,11 +25,10 @@ namespace WorkingWithVisualStudio.Tests
         [ClassData(typeof(ProductTestData))]
         public void IndexActionModelISComplete(Product[] products)
         {
-            var controller = new HomeController();
-            controller.Repository = new ModelCompleteFakeRepository
-            {
-                Products = products
-            };
+
+            var mock = new Mock<IRepository>();
+            mock.SetupGet(m => m.Products).Returns(products);
+            var controller = new HomeController { Repository = mock.Object };
             var model = (controller.Index() as ViewResult)?.ViewData.Model as IEnumerable<Product>;
             Assert.Equal(controller.Repository.Products, model, Comparer.Get<Product>((p1, p2) => p1.Name == p2.Name && p1.Price == p2.Price));
         }
